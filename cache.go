@@ -17,10 +17,10 @@ func (c *Cache) Init(data ...map[string]interface{}) {
 	}
 }
 
-func (c *Cache) Get(snowflake string) interface{} {
+func (c *Cache) get(snowflake string) interface{} {
 	return c.cache[snowflake]
 }
 
-func (c *Cache) Set(snowflake string, value interface{}) {
+func (c *Cache) set(snowflake string, value interface{}) {
 	c.cache[snowflake] = value
 }

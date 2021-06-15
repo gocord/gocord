@@ -6,10 +6,20 @@ import (
 )
 
 type Channel struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	NSFW   bool   `json:"nsfw"`
-	Client *Client
+	// Client
+	client *Client
+
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	NSFW bool   `json:"nsfw"`
+}
+
+type ChannelCache struct {
+	cache Cache
+}
+
+func (c *ChannelCache) Get(snowflake string) Channel {
+	return c.cache.get(snowflake).(Channel)
 }
 
 // Fetches a channel.
@@ -25,14 +35,14 @@ func (c *Client) getChannel(id string) *Channel {
 	}
 	var channel Channel
 	json.Unmarshal([]byte(resp), &channel)
-	channel.Client = c
+	channel.client = c
 	return &channel
 }
 
 // Sends a message to a specified channel.
 func (c *Channel) SendMessage(message string) error {
 	/* need something better then c.Client */
-	_, err := c.Client.sendRequest(
+	_, err := c.client.sendRequest(
 		fmt.Sprintf("/channels/%s/messages", c.ID),
 		"POST",
 		fmt.Sprintf(`{"content": "%s"}`, message),
@@ -46,7 +56,7 @@ func (c *Channel) SendEmbed(embed Embed) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.Client.sendRequest(
+	_, err = c.client.sendRequest(
 		fmt.Sprintf("/channels/%s/messages", c.ID),
 		"POST",
 		fmt.Sprintf(`{"embed": %s}`, body),

@@ -1,26 +1,22 @@
 package gocord
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type Guild struct {
+	// Client
+	client *Client
+
 	ID       string
 	Channels []*Channel
 	Members  []*Member
-	Client   *Client
-}
-
-type GuildCache struct {
-	// don't export cache xd
-	cache Cache
-}
-
-func (c *GuildCache) Get(snowflake string) Guild {
-	return c.cache.Get(snowflake).(Guild)
 }
 
 // Bans the member from the guild
 func (g *Guild) BanMember(memberid, reason string) error {
-	_, err := g.Client.sendRequest(
+	_, err := g.client.sendRequest(
 		fmt.Sprintf("/guilds/%s/bans/%s", g.ID, memberid),
 		"PUT",
 		fmt.Sprintf(`{"reason":"%s"}`, reason),
@@ -30,7 +26,7 @@ func (g *Guild) BanMember(memberid, reason string) error {
 
 // Unbans the member from the guild
 func (g *Guild) UnbanMember(memberId, reason string) error {
-	_, err := g.Client.sendRequest(
+	_, err := g.client.sendRequest(
 		fmt.Sprintf("/guilds/%s/bans/%s", g.ID, memberId),
 		"DELETE",
 		"", // TODO: Add reason support
@@ -40,7 +36,7 @@ func (g *Guild) UnbanMember(memberId, reason string) error {
 
 // Kicks (or removes) a member from the guild
 func (g *Guild) KickMember(memberId, reason string) error {
-	_, err := g.Client.sendRequest(
+	_, err := g.client.sendRequest(
 		fmt.Sprintf("/guilds/%s/members/%s", g.ID, memberId),
 		"DELETE",
 		"", // TODO: Add reason support
@@ -50,7 +46,7 @@ func (g *Guild) KickMember(memberId, reason string) error {
 
 // Creates a role
 func (g *Guild) CreateRole(name, permissions string, color int, hoist, mentionable bool) error {
-	_, err := g.Client.sendRequest(
+	_, err := g.client.sendRequest(
 		fmt.Sprintf("/guilds/%s/roles", g.ID),
 		"POST",
 		fmt.Sprintf(
@@ -67,10 +63,34 @@ func (g *Guild) CreateRole(name, permissions string, color int, hoist, mentionab
 
 // Deletes a role
 func (g *Guild) DeleteRole(roleId string) error {
-	_, err := g.Client.sendRequest(
+	_, err := g.client.sendRequest(
 		fmt.Sprintf("/guilds/%s/roles/%s", g.ID, roleId),
 		"DELETE",
 		"", // TODO: Add reason support
 	)
 	return err
+}
+
+// Caching related
+
+type GuildCache struct {
+	// don't export cache xd
+	cache Cache
+}
+
+func (c *GuildCache) Get(snowflake string) Guild {
+	return c.cache.get(snowflake).(Guild)
+}
+
+func (c *Client) loadGuilds() error {
+	g, err := c.sendRequest("/users/@me/guilds", "GET", "")
+	if err != nil {
+		return err
+	}
+	var guilds []Guild
+	json.Unmarshal([]byte(g), &g)
+	for _, guild := range guilds {
+		c.Guilds.cache.set(guild.ID, guild)
+	}
+	return nil
 }

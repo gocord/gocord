@@ -1,6 +1,11 @@
 package gocord
 
+// TODO this is all a fucking mess , clean it up
+
 type User struct {
+	// Client
+	client *Client
+
 	ID            string `json:"id"`
 	Username      string `json:"username"`
 	Discriminator string `json:"discriminator"`

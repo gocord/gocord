@@ -106,8 +106,10 @@ func (w *Websocket) connect() error {
 	ctx, eType := acquireContext(ev, w.client)
 	w.client.call(eType, ctx)
 
-	// Initaliase Caches
+	// Initaliase Cache
+	w.client.Guilds = &GuildCache{}
 	w.client.Guilds.cache.Init()
+	w.client.loadGuilds()
 
 	//
 	w.listening = make(chan interface{})

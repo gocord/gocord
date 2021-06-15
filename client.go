@@ -7,7 +7,10 @@ type Client struct {
 	ws      *Websocket
 	events  map[string][]EventFunc
 	User    User `json:"user"`
-	Guilds  GuildCache
+
+	// Cached Values
+	Guilds   *GuildCache
+	Channels *ChannelCache
 }
 
 type Options struct {
