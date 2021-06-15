@@ -9,6 +9,15 @@ type Guild struct {
 	Client   *Client
 }
 
+type GuildCache struct {
+	// don't export cache xd
+	cache Cache
+}
+
+func (c *GuildCache) Get(snowflake string) Guild {
+	return c.cache.Get(snowflake).(Guild)
+}
+
 // Bans the member from the guild
 func (g *Guild) BanMember(memberid, reason string) error {
 	_, err := g.Client.sendRequest(

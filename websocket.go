@@ -102,9 +102,14 @@ func (w *Websocket) connect() error {
 		return ErrEventDecode
 	}
 
+	// Ready Event
 	ctx, eType := acquireContext(ev, w.client)
 	w.client.call(eType, ctx)
 
+	// Initaliase Caches
+	w.client.Guilds.cache.Init()
+
+	//
 	w.listening = make(chan interface{})
 
 	go w.heartbeat(h.Interval)
