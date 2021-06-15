@@ -1,4 +1,4 @@
-module gitlab.com/weary/gocord
+module github.com/gocord/gocord
 
 go 1.16
 

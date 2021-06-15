@@ -1,8 +1,8 @@
 package examples
 
 import (
-	"gitlab.com/weary/gocord"
-	"gitlab.com/weary/gocord/commands"
+	"github.com/gocord/gocord"
+	"github.com/gocord/gocord/commands"
 )
 
 func main() {

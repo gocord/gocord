@@ -3,7 +3,7 @@ package commands
 import (
 	"strings"
 
-	"gitlab.com/weary/gocord"
+	"github.com/gocord/gocord"
 )
 
 // TODO add custom context that inherits gocord.Context?

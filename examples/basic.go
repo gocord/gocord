@@ -3,7 +3,7 @@ package examples
 import (
 	"fmt"
 
-	"gitlab.com/weary/gocord"
+	"github.com/gocord/gocord"
 )
 
 func main() {
