@@ -12,6 +12,7 @@ type Message struct {
 	Embeds    []Embed          `json:"embeds"`
 	Author    User             `json:"author"`
 	Mentions  []MessageMention `json:"mentions"`
+	Partial   bool             `json:"partial"`
 
 	// Fetched data
 	Channel *Channel

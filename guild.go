@@ -9,7 +9,11 @@ type Guild struct {
 	// Client
 	client *Client
 
-	ID       string
+	// JSON
+	Partial bool   `json:"partial"`
+	ID      string `json:"id"`
+
+	// Fetched
 	Channels []*Channel
 	Members  []*Member
 }

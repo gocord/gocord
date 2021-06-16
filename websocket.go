@@ -98,7 +98,7 @@ func (w *Websocket) connect() error {
 	// Make calls to this channel and add more listeners
 	w.listening = make(chan interface{})
 
-	go w.heartbeat(h.Interval)
+	go w.heartbeat(w.interval)
 	go w.events()
 
 	return nil

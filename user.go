@@ -11,6 +11,7 @@ type User struct {
 	Username      string `json:"username"`
 	Discriminator string `json:"discriminator"`
 	Bot           bool   `json:"bot"`
+	Partial       bool   `json:"partial"`
 }
 
 type Author struct {

@@ -10,9 +10,10 @@ type Channel struct {
 	client *Client
 
 	// JSON
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	NSFW bool   `json:"nsfw"`
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	NSFW    bool   `json:"nsfw"`
+	Partial bool   `json:"partial"`
 }
 
 type ChannelCache struct {
