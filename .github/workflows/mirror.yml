@@ -26,6 +26,6 @@ jobs:
           # SSH private key for ssh connection to the target repository
           ssh_private_key: ${{ secrets.GITLAB_PRIVATE_KEY }}
           # Target url
-          target_repo_url: git@gitlab.com/weary/gocord.git
+          target_repo_url: git@gitlab.com:weary/gocord.git
           # Username for ssh connection
           ssh_username: git
