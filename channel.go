@@ -9,6 +9,7 @@ type Channel struct {
 	// Client
 	client *Client
 
+	// JSON
 	ID   string `json:"id"`
 	Name string `json:"name"`
 	NSFW bool   `json:"nsfw"`

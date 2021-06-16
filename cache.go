@@ -4,6 +4,7 @@ type Cache struct {
 	cache map[string]interface{}
 }
 
+// Initalise cache
 func (c *Cache) Init(data ...map[string]interface{}) {
 	// make cache mutable
 	c.cache = make(map[string]interface{})

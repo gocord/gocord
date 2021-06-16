@@ -74,7 +74,6 @@ func (g *Guild) DeleteRole(roleId string) error {
 // Caching related
 
 type GuildCache struct {
-	// don't export cache xd
 	cache Cache
 }
 
@@ -82,7 +81,7 @@ func (c *GuildCache) Get(snowflake string) Guild {
 	return c.cache.get(snowflake).(Guild)
 }
 
-func (c *Client) loadGuilds() error {
+func (c *Client) fetchGuilds() error {
 	g, err := c.sendRequest("/users/@me/guilds", "GET", "")
 	if err != nil {
 		return err

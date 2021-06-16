@@ -5,15 +5,18 @@ import (
 	"encoding/json"
 )
 
+// TODO: finish labeling this struct
+
 type Context struct {
+	// Event Type
 	Type string
-	/* Only exists on messageCreate */
+	// Only exists on messageCreate
 	Message *Message
-	/* Should always exist */
+	// Always Exists
 	Client *Client
-	/* Exists in channel create and delete */
+	// Exists in messageCreate, channelCreate, channelDelete and channelUpdate
 	Channel *Channel
-	/* Exists on member join, leave and update */
+	// Exists on guildMemberAdd
 	Member *Member
 }
 

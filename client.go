@@ -3,14 +3,21 @@ package gocord
 type EventFunc func(context *Context)
 
 type Client struct {
+
+	// General Values
 	Options Options
 	ws      *Websocket
-	events  map[string][]EventFunc
-	User    User `json:"user"`
 
-	// Cached Values
+	// Events
+	events map[string][]EventFunc
+
+	// JSON
+	User User `json:"user"`
+
+	// Cache
 	Guilds   *GuildCache
 	Channels *ChannelCache
+	Users    *UserCache
 }
 
 type Options struct {

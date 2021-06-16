@@ -2,7 +2,6 @@ package gocord
 
 import "strings"
 
-// really fucking unreadable :D
 func GetEventName(eName string) string {
 	eName = strings.ToLower(eName)
 	for i, rn := range eName {
@@ -12,4 +11,9 @@ func GetEventName(eName string) string {
 		}
 	}
 	return eName
+}
+
+// TODO: this
+func readSnowflake(snowflake string) {
+
 }

@@ -28,6 +28,8 @@ type heartbeatOp struct {
 	Data int64 `json:"d"`
 }
 
+// TODO: migrate everything to read raw response and handle all in one function here
+
 func (w *Websocket) readEvent(mType int, data []byte) (*Event, error) {
 
 	var reader io.Reader

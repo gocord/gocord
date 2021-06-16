@@ -107,11 +107,15 @@ func (w *Websocket) connect() error {
 	w.client.call(eType, ctx)
 
 	// Initaliase Cache
-	w.client.Guilds = &GuildCache{}
-	w.client.Guilds.cache.Init()
-	w.client.loadGuilds()
+	{
+		w.client.Guilds = &GuildCache{}
+		w.client.Guilds.cache.Init()
+		w.client.fetchGuilds()
+	}
 
-	//
+	// TODO: Check for other websocket inital messages for things like gateway resume
+
+	// Make calls to this channel and add more listeners
 	w.listening = make(chan interface{})
 
 	go w.heartbeat(h.Interval)
