@@ -29,43 +29,7 @@ type heartbeatOp struct {
 	Data int64 `json:"d"`
 }
 
-// TODO: migrate everything to read raw response and handle all in one function here
-
-func (w *Websocket) readEvent(mType int, data []byte) (*Event, error) {
-
-	var reader io.Reader
-	reader = bytes.NewBuffer(data)
-
-	if mType == websocket.BinaryMessage {
-		z, err := zlib.NewReader(reader)
-		if err != nil {
-			return nil, ErrDecompressEvent
-		}
-		defer z.Close()
-
-		reader = z
-	}
-
-	var e *Event
-	dec := json.NewDecoder(reader)
-	if err := dec.Decode(&e); err != nil {
-		return e, ErrEventDecode
-	}
-
-	if e.Op == 1 {
-		err := w.conn.WriteJSON(heartbeatOp{1, w.seq})
-		if err != nil {
-			return e, ErrHeartbeat
-		}
-
-		return e, nil
-	}
-
-	w.seq = e.Seq
-
-	return e, nil
-}
-
+// TODO: add hello event checking
 func (w *Websocket) handleEvent(mType int, data []byte) error {
 
 	// Define as io.Reader for zlib
@@ -88,6 +52,16 @@ func (w *Websocket) handleEvent(mType int, data []byte) error {
 		return err
 	}
 
+	switch ev.Op {
+	case 10:
+		var h helloOp
+		if err := json.Unmarshal(ev.Data, &h); err != nil {
+			return err
+		}
+
+		w.interval = h.Interval
+	}
+
 	// Set websocket sequence
 	w.seq = ev.Seq
 
@@ -98,7 +72,7 @@ func (w *Websocket) handleEvent(mType int, data []byte) error {
 		return err
 	}
 	if resp.Type != 0 {
-		return errors.New("unknown data type")
+		return errors.New("invalid data type")
 	}
 
 	var ctx Context

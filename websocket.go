@@ -14,6 +14,7 @@ type Websocket struct {
 	gateway       string
 	lastHeartbeat time.Time
 	seq           int64
+	interval      time.Duration
 	client        *Client
 	listening     chan interface{}
 }
@@ -73,33 +74,13 @@ func (w *Websocket) connect() error {
 		return ErrCannotRead
 	}
 
-	ev, err := w.readEvent(t, m)
-	if err != nil {
-		return err
-	}
-
-	if ev.Op != 10 {
-		return ErrExpectedHello
-	}
-
-	var h helloOp
-	if err := json.Unmarshal(ev.Data, &h); err != nil {
-		return ErrEventDecode
-	}
+	w.handleEvent(t, m)
 
 	w.identify()
 
 	t, m, err = w.conn.ReadMessage()
 	if err != nil {
 		return ErrCannotRead
-	}
-	ev, err = w.readEvent(t, m)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(ev.Data, &w.client); err != nil {
-		return ErrEventDecode
 	}
 
 	// Ready Event
