@@ -1,17 +1,17 @@
 package gocord
 
-import "fmt"
+import "errors"
 
-var ErrClientCreate = fmt.Errorf("an error occurred while instantiating the client")
+var ErrClientCreate = errors.New("an error occurred while instantiating the client")
 
-var ErrNoGateway = fmt.Errorf("failed to get gateway uri")
-var ErrConnFailed = fmt.Errorf("failed to connect to gateway")
-var ErrCannotRead = fmt.Errorf("failed to read gateway message")
+var ErrNoGateway = errors.New("failed to get gateway uri")
+var ErrConnFailed = errors.New("failed to connect to gateway")
+var ErrCannotRead = errors.New("failed to read gateway message")
 
-var ErrDecompressEvent = fmt.Errorf("failed to decompress event message")
-var ErrEventDecode = fmt.Errorf("failed to decode even message")
-var ErrHeartbeat = fmt.Errorf("failed to send heartbeat")
-var ErrExpectedHello = fmt.Errorf("gateway returned non-hello response")
+var ErrDecompressEvent = errors.New("failed to decompress event message")
+var ErrEventDecode = errors.New("failed to decode even message")
+var ErrHeartbeat = errors.New("failed to send heartbeat")
+var ErrExpectedHello = errors.New("gateway returned non-hello response")
 
 var Intents = struct {
 	GUILDS                   int
