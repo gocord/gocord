@@ -64,14 +64,14 @@ var EVENTS = struct {
 }
 
 var protectedEvents = map[string]bool{
-	GetEventName(EVENTS.READY):               true,
-	GetEventName(EVENTS.MESSAGE_CREATE):      true,
-	GetEventName(EVENTS.CHANNEL_CREATE):      true,
-	GetEventName(EVENTS.CHANNEL_UPDATE):      true,
-	GetEventName(EVENTS.CHANNEL_DELETE):      true,
-	GetEventName(EVENTS.GUILD_BAN_ADD):       true,
-	GetEventName(EVENTS.GUILD_BAN_REMOVE):    true,
-	GetEventName(EVENTS.GUILD_MEMBER_ADD):    true,
-	GetEventName(EVENTS.GUILD_MEMBER_REMOVE): true,
-	GetEventName(EVENTS.GUILD_MEMBER_UPDATE): true,
+	getEventName(EVENTS.READY):               true,
+	getEventName(EVENTS.MESSAGE_CREATE):      true,
+	getEventName(EVENTS.CHANNEL_CREATE):      true,
+	getEventName(EVENTS.CHANNEL_UPDATE):      true,
+	getEventName(EVENTS.CHANNEL_DELETE):      true,
+	getEventName(EVENTS.GUILD_BAN_ADD):       true,
+	getEventName(EVENTS.GUILD_BAN_REMOVE):    true,
+	getEventName(EVENTS.GUILD_MEMBER_ADD):    true,
+	getEventName(EVENTS.GUILD_MEMBER_REMOVE): true,
+	getEventName(EVENTS.GUILD_MEMBER_UPDATE): true,
 }

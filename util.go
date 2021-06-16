@@ -2,7 +2,7 @@ package gocord
 
 import "strings"
 
-func GetEventName(eName string) string {
+func getEventName(eName string) string {
 	eName = strings.ToLower(eName)
 	for i, rn := range eName {
 		if rn == '_' {

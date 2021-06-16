@@ -103,8 +103,7 @@ func (w *Websocket) connect() error {
 	}
 
 	// Ready Event
-	ctx, eType := acquireContext(ev, w.client)
-	w.client.call(eType, ctx)
+	w.handleEvent(t, m)
 
 	// Initaliase Cache
 	{
@@ -179,16 +178,9 @@ func (w *Websocket) events() {
 		case <-w.listening:
 			return
 		default:
-			ev, err := w.readEvent(mt, m)
-			if err != nil {
+			if err := w.handleEvent(mt, m); err != nil {
 				return
 			}
-
-			ctx, eType := acquireContext(ev, w.client)
-			if eType == "" || ctx == nil {
-				return
-			}
-			w.client.call(eType, ctx)
 		}
 	}
 }
