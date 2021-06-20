@@ -1,39 +1,55 @@
 package gocord
 
 import (
-	"io"
-	"io/ioutil"
-	"net/http"
-	"strings"
+	"github.com/valyala/fasthttp"
 )
 
 const baseurl = "https://discordapp.com/api/v9"
 
 func (c *Client) sendRequest(endpoint, method, body string) (string, error) {
-	var rBody io.Reader = nil
+	res := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(res)
+
+	res.SetRequestURI(baseurl+endpoint)
+	
+	res.Header.SetMethod(method)
+	res.AppendBodyString(body)
+
+	res.Header.Set("authorization", c.Options.Token)
 	if body != "" {
-		rBody = strings.NewReader(body)
-	}
-	req, err := http.NewRequest(method, baseurl+endpoint, rBody)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("authorization", c.Options.Token)
-	if body != "" {
-		req.Header.Set("content-type", "application/json")
+		res.Header.SetContentType("application/json")
 	}
 
-	client := &http.Client{}
-	res, err := client.Do(req)
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	err := fasthttp.Do(res, resp)
 	if err != nil {
 		return "", err
 	}
 
-	defer res.Body.Close()
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
+	return string(resp.Body()), nil
 
-	return string(b), nil
+	// req, err := http.NewRequest(method, baseurl+endpoint, rBody)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// req.Header.Set("authorization", c.Options.Token)
+	// if body != "" {
+	// 	req.Header.Set("content-type", "application/json")
+	// }
+
+	// client := &http.Client{}
+	// res, err := client.Do(req)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	// defer res.Body.Close()
+	// b, err := ioutil.ReadAll(res.Body)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	// return string(b), nil
 }
