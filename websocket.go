@@ -1,12 +1,14 @@
 package gocord
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
+	"nhooyr.io/websocket/wsjson"
 )
 
 type Websocket struct {
@@ -60,16 +62,18 @@ func (w *Websocket) connect() error {
 	header := http.Header{}
 	header.Add("accept-encoding", "zlib")
 	var err error
-	w.conn, _, err = websocket.DefaultDialer.Dial(w.gateway, header)
+	w.conn, _, err = websocket.Dial(context.Background(), w.gateway, &websocket.DialOptions{
+		HTTPHeader: header,
+	})
 	if err != nil {
 		return ErrConnFailed
 	}
 
-	w.conn.SetCloseHandler(func(code int, text string) error {
-		return nil
-	})
+	// w.conn.SetCloseHandler(func(code int, text string) error {
+	// 	return nil
+	// })
 
-	t, m, err := w.conn.ReadMessage()
+	t, m, err := w.conn.Read(context.Background())
 	if err != nil {
 		return ErrCannotRead
 	}
@@ -78,7 +82,7 @@ func (w *Websocket) connect() error {
 
 	w.identify()
 
-	t, m, err = w.conn.ReadMessage()
+	t, m, err = w.conn.Read(context.Background())
 	if err != nil {
 		return ErrCannotRead
 	}
@@ -122,7 +126,7 @@ type identify struct {
 }
 
 func (w *Websocket) identify() {
-	w.conn.WriteJSON(identify{
+	wsjson.Write(context.Background(), w.conn, identify{
 		Op: 2,
 		Data: identifyData{
 			Token:   w.client.Options.Token,
@@ -142,7 +146,7 @@ func (w *Websocket) heartbeat(interval time.Duration) {
 		select {
 		case <-ticker.C:
 			w.lastHeartbeat = time.Now()
-			w.conn.WriteJSON(heartbeatOp{1, w.seq})
+			wsjson.Write(context.Background(), w.conn, heartbeatOp{1, w.seq})
 		case <-w.listening:
 			return
 		}
@@ -151,7 +155,7 @@ func (w *Websocket) heartbeat(interval time.Duration) {
 
 func (w *Websocket) events() {
 	for {
-		mt, m, err := w.conn.ReadMessage()
+		mt, m, err := w.conn.Read(context.Background())
 		if err != nil {
 			return
 		}

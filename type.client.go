@@ -53,7 +53,7 @@ func (c *Client) Connect() error {
 
 // Closes the current websocket connection with Discord.
 func (c *Client) Close() {
-	c.ws.conn.Close()
+	c.ws.conn.Close(1000, "")
 	c.ws.listening <- 0
 }
 
