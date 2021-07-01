@@ -1,5 +1,7 @@
 package gocord
 
+import "time"
+
 type EventFunc func(context *Context)
 
 type Client struct {
@@ -7,6 +9,10 @@ type Client struct {
 	// General Values
 	Options Options
 	ws      *Websocket
+
+	// Client Info
+	Uptime  int64
+	ReadyAt time.Time
 
 	// Events
 	events map[string][]EventFunc

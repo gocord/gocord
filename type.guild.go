@@ -10,8 +10,8 @@ type Guild struct {
 	client *Client
 
 	// JSON
-	Partial bool   `json:"partial"`
-	ID      string `json:"id"`
+	Partial bool      `json:"partial"`
+	ID      Snowflake `json:"id"`
 
 	// Fetched
 	Channels []*Channel
@@ -93,7 +93,7 @@ func (c *Client) fetchGuilds() error {
 	var guilds []Guild
 	json.Unmarshal([]byte(g), &g)
 	for _, guild := range guilds {
-		c.Guilds.cache.set(guild.ID, guild)
+		c.Guilds.cache.set(guild.ID.string, guild)
 	}
 	return nil
 }

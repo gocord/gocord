@@ -6,7 +6,7 @@ type Message struct {
 
 	// JSON
 	Content   string           `json:"content"`
-	ID        string           `json:"id"`
+	ID        Snowflake        `json:"id"`
 	ChannelID string           `json:"channel_id"`
 	Member    Member           `json:"member"`
 	Embeds    []Embed          `json:"embeds"`

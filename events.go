@@ -59,6 +59,7 @@ func (w *Websocket) handleEvent(mType websocket.MessageType, data []byte) error 
 			return err
 		}
 
+		w.client.ReadyAt = time.Now()
 		w.interval = h.Interval
 	}
 

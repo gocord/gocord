@@ -69,10 +69,7 @@ func (w *Websocket) connect() error {
 		return ErrConnFailed
 	}
 
-	// w.conn.SetCloseHandler(func(code int, text string) error {
-	// 	return nil
-	// })
-
+	// read first message
 	t, m, err := w.conn.Read(context.Background())
 	if err != nil {
 		return ErrCannotRead
