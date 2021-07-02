@@ -1,18 +1,20 @@
 package gocord
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
+	"github.com/gobwas/ws"
 )
 
 type Websocket struct {
-	conn          *websocket.Conn
+	conn          net.Conn
 	gateway       string
 	lastHeartbeat time.Time
 	seq           int64
@@ -62,30 +64,28 @@ func (w *Websocket) connect() error {
 	header := http.Header{}
 	header.Add("accept-encoding", "zlib")
 	var err error
-	w.conn, _, err = websocket.Dial(context.Background(), w.gateway, &websocket.DialOptions{
-		HTTPHeader: header,
-	})
+	w.conn, _, _, err = ws.Dial(context.Background(), w.gateway)
 	if err != nil {
 		return ErrConnFailed
 	}
 
 	// read first message
-	t, m, err := w.conn.Read(context.Background())
+	m, err := w.readMessage()
+	// t, m, err := w.conn.Read(context.Background())
 	if err != nil {
 		return ErrCannotRead
 	}
-
-	w.handleEvent(t, m)
+	w.handleEvent(m)
 
 	w.identify()
 
-	t, m, err = w.conn.Read(context.Background())
+	m, err = w.readMessage()
 	if err != nil {
 		return ErrCannotRead
 	}
 
 	// Ready Event
-	w.handleEvent(t, m)
+	w.handleEvent(m)
 
 	// Initaliase Cache
 	{
@@ -122,8 +122,12 @@ type identify struct {
 	Data identifyData `json:"d"`
 }
 
+func (w *Websocket) writeJSON(data interface{}) error {
+	return json.NewEncoder(w.conn).Encode(&data)
+}
+
 func (w *Websocket) identify() {
-	wsjson.Write(context.Background(), w.conn, identify{
+	w.writeJSON(identify{
 		Op: 2,
 		Data: identifyData{
 			Token:   w.client.Options.Token,
@@ -143,16 +147,24 @@ func (w *Websocket) heartbeat(interval time.Duration) {
 		select {
 		case <-ticker.C:
 			w.lastHeartbeat = time.Now()
-			wsjson.Write(context.Background(), w.conn, heartbeatOp{1, w.seq})
+			w.writeJSON(heartbeatOp{1, w.seq})
 		case <-w.listening:
 			return
 		}
 	}
 }
 
+func (w *Websocket) readMessage() ([]byte, error) {
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, w.conn); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 func (w *Websocket) events() {
 	for {
-		mt, m, err := w.conn.Read(context.Background())
+		m, err := w.readMessage()
 		if err != nil {
 			return
 		}
@@ -160,7 +172,7 @@ func (w *Websocket) events() {
 		case <-w.listening:
 			return
 		default:
-			if err := w.handleEvent(mt, m); err != nil {
+			if err := w.handleEvent(m); err != nil {
 				return
 			}
 		}

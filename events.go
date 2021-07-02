@@ -2,13 +2,10 @@ package gocord
 
 import (
 	"bytes"
-	"compress/zlib"
 	"encoding/json"
 	"errors"
 	"io"
 	"time"
-
-	"nhooyr.io/websocket"
 )
 
 type Event struct {
@@ -30,20 +27,20 @@ type heartbeatOp struct {
 }
 
 // TODO: add hello event checking
-func (w *Websocket) handleEvent(mType websocket.MessageType, data []byte) error {
+func (w *Websocket) handleEvent(data []byte) error {
 
 	// Define as io.Reader for zlib
 	var reader io.Reader
 	reader = bytes.NewBuffer(data)
 
-	if mType == websocket.MessageBinary {
-		zl, err := zlib.NewReader(reader)
-		if err != nil {
-			return err
-		}
-		defer zl.Close()
-		reader = zl
-	}
+	// if mType == websocket.MessageBinary {
+	// 	zl, err := zlib.NewReader(reader)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer zl.Close()
+	// 	reader = zl
+	// }
 
 	// Unmarshal websocket message into event
 	var ev *Event
