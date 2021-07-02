@@ -6,13 +6,16 @@ type Message struct {
 
 	// JSON
 	Content   string           `json:"content"`
-	ID        Snowflake        `json:"id"`
+	ID        *Snowflake       `json:"id"`
 	ChannelID string           `json:"channel_id"`
 	Member    Member           `json:"member"`
 	Embeds    []Embed          `json:"embeds"`
 	Author    User             `json:"author"`
 	Mentions  []MessageMention `json:"mentions"`
 	Partial   bool             `json:"partial"`
+
+	// General
+	ApplicationID *Snowflake
 
 	// Fetched data
 	Channel *Channel
@@ -21,3 +24,7 @@ type Message struct {
 
 type MessageMention struct {
 }
+
+// func (m *Message) Delete() error {
+// 	m.Client.sendRequest("DELETE")
+// }

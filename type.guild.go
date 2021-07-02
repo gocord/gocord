@@ -10,8 +10,8 @@ type Guild struct {
 	client *Client
 
 	// JSON
-	Partial bool      `json:"partial"`
-	ID      Snowflake `json:"id"`
+	Partial bool       `json:"partial"`
+	ID      *Snowflake `json:"id"`
 
 	// Fetched
 	Channels []*Channel

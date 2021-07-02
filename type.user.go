@@ -7,11 +7,11 @@ type User struct {
 	client *Client
 
 	// JSON
-	ID            string `json:"id"`
-	Username      string `json:"username"`
-	Discriminator string `json:"discriminator"`
-	Bot           bool   `json:"bot"`
-	Partial       bool   `json:"partial"`
+	ID            *Snowflake `json:"id"`
+	Username      string     `json:"username"`
+	Discriminator string     `json:"discriminator"`
+	Bot           bool       `json:"bot"`
+	Partial       bool       `json:"partial"`
 }
 
 type Author struct {
@@ -32,7 +32,7 @@ type Member struct {
 }
 
 func (m *Member) Ban(reason string) error {
-	return m.Guild.BanMember(m.User.ID, reason)
+	return m.Guild.BanMember(m.User.ID.string, reason)
 }
 
 // Caching related
