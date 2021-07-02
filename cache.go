@@ -25,3 +25,11 @@ func (c *Cache) get(snowflake string) interface{} {
 func (c *Cache) set(snowflake string, value interface{}) {
 	c.cache[snowflake] = value
 }
+
+func (c *Cache) add(data interface{}) {
+	d, ok := data.(struct{ ID string })
+	if !ok {
+		return
+	}
+	c.cache[d.ID] = d
+}

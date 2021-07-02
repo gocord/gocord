@@ -12,8 +12,3 @@ func getEventName(eName string) string {
 	}
 	return eName
 }
-
-// TODO: this
-func readSnowflake(snowflake string) {
-
-}

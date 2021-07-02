@@ -81,10 +81,7 @@ func (w *Websocket) handleEvent(mType websocket.MessageType, data []byte) error 
 
 	switch ev.Type {
 	case EVENTS.MESSAGE_CREATE:
-		var message Message
-		json.Unmarshal([]byte(ev.Data), &message)
-		message.Channel = w.client.getChannel(message.ChannelID)
-		ctx.Message = &message
+		ctx.Message = &(*newMessage(w.client, ev.Data))
 	/* this should be temporary lol , have this switch every event */
 	case EVENTS.CHANNEL_CREATE, EVENTS.CHANNEL_DELETE, EVENTS.CHANNEL_UPDATE:
 		var channel Channel
