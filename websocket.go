@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -68,7 +69,45 @@ func (w *Websocket) connect() error {
 	if err != nil {
 		return ErrConnFailed
 	}
+	fmt.Println("connected to ws")
+	w.listening = make(chan interface{})
 
+	messages := make(chan []byte)
+	identified := false
+
+	go func() {
+		for {
+			msg := make([]byte, 256)
+			n, err := w.conn.Read(msg)
+			if err != nil {
+				if err != io.EOF {
+					fmt.Println(err)
+					return
+				}
+			}
+			if len(msg) > 3 && n > 0 {
+				if (msg[0] - (1 << 7)) == 8 {
+					w.conn.Close()
+					w.listening <- nil
+					return
+				}
+				fmt.Println(msg[0] - (1 << 7))
+				messages <- msg[2:n]
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			fmt.Println(string(<-messages))
+			if !identified {
+				w.identify()
+				identified = true
+			}
+		}
+	}()
+
+	return nil
 	// read first message
 	m, err := w.readMessage()
 	// t, m, err := w.conn.Read(context.Background())
@@ -123,7 +162,18 @@ type identify struct {
 }
 
 func (w *Websocket) writeJSON(data interface{}) error {
-	return json.NewEncoder(w.conn).Encode(&data)
+	bytes, err := json.Marshal(&data)
+	if err != nil {
+		return err
+	}
+	message := append([]byte{1 << 9 & 1 << 0, 1 << 7 & byte(len(bytes))}, bytes...)
+	fmt.Println(string(message))
+	_, err = w.conn.Write(message)
+	if err != nil {
+		return err
+	}
+	return nil
+	// json.NewEncoder(w.conn).Encode(&data)
 }
 
 func (w *Websocket) identify() {
