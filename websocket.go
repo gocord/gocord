@@ -1,11 +1,9 @@
 package gocord
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -72,42 +70,6 @@ func (w *Websocket) connect() error {
 	fmt.Println("connected to ws")
 	w.listening = make(chan interface{})
 
-	messages := make(chan []byte)
-	identified := false
-
-	go func() {
-		for {
-			msg := make([]byte, 256)
-			n, err := w.conn.Read(msg)
-			if err != nil {
-				if err != io.EOF {
-					fmt.Println(err)
-					return
-				}
-			}
-			if len(msg) > 3 && n > 0 {
-				if (msg[0] - (1 << 7)) == 8 {
-					w.conn.Close()
-					w.listening <- nil
-					return
-				}
-				fmt.Println(msg[0] - (1 << 7))
-				messages <- msg[2:n]
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			fmt.Println(string(<-messages))
-			if !identified {
-				w.identify()
-				identified = true
-			}
-		}
-	}()
-
-	return nil
 	// read first message
 	m, err := w.readMessage()
 	// t, m, err := w.conn.Read(context.Background())
@@ -166,13 +128,8 @@ func (w *Websocket) writeJSON(data interface{}) error {
 	if err != nil {
 		return err
 	}
-	message := append([]byte{1 << 9 & 1 << 0, 1 << 7 & byte(len(bytes))}, bytes...)
-	fmt.Println(string(message))
-	_, err = w.conn.Write(message)
-	if err != nil {
-		return err
-	}
-	return nil
+	fmt.Println(string(bytes))
+	return ws.WriteFrame(w.conn, ws.NewTextFrame(bytes))
 	// json.NewEncoder(w.conn).Encode(&data)
 }
 
@@ -205,11 +162,15 @@ func (w *Websocket) heartbeat(interval time.Duration) {
 }
 
 func (w *Websocket) readMessage() ([]byte, error) {
-	var buf bytes.Buffer
-	if _, err := io.Copy(&buf, w.conn); err != nil {
+	frame, err := ws.ReadFrame(w.conn)
+	if err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	fmt.Println(frame.Header.OpCode)
+	// if _, err := io.Copy(&buf, w.conn); err != nil {
+	// 	return nil, err
+	// }
+	return frame.Payload, nil
 }
 
 func (w *Websocket) events() {
