@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -67,26 +68,23 @@ func (w *Websocket) connect() error {
 	if err != nil {
 		return ErrConnFailed
 	}
-	fmt.Println("connected to ws")
 	w.listening = make(chan interface{})
 
 	// read first message
-	m, err := w.readMessage()
+	f, err := w.readMessage()
 	// t, m, err := w.conn.Read(context.Background())
 	if err != nil {
 		return ErrCannotRead
 	}
-	w.handleEvent(m)
+	w.handleEvent(f)
 
 	w.identify()
 
-	m, err = w.readMessage()
+	f, err = w.readMessage()
+	w.handleEvent(f)
 	if err != nil {
 		return ErrCannotRead
 	}
-
-	// Ready Event
-	w.handleEvent(m)
 
 	// Initaliase Cache
 	{
@@ -96,9 +94,6 @@ func (w *Websocket) connect() error {
 	}
 
 	// TODO: Check for other websocket inital messages for things like gateway resume
-
-	// Make calls to this channel and add more listeners
-	w.listening = make(chan interface{})
 
 	go w.heartbeat(w.interval)
 	go w.events()
@@ -128,13 +123,19 @@ func (w *Websocket) writeJSON(data interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(bytes))
 	return ws.WriteFrame(w.conn, ws.NewTextFrame(bytes))
-	// json.NewEncoder(w.conn).Encode(&data)
+}
+
+func (w *Websocket) mustWriteJSON(data interface{}) {
+	bytes, err := json.Marshal(&data)
+	if err != nil {
+		panic(err)
+	}
+	ws.MustWriteFrame(w.conn, ws.NewTextFrame(bytes))
 }
 
 func (w *Websocket) identify() {
-	w.writeJSON(identify{
+	w.mustWriteJSON(identify{
 		Op: 2,
 		Data: identifyData{
 			Token:   w.client.Options.Token,
@@ -154,29 +155,40 @@ func (w *Websocket) heartbeat(interval time.Duration) {
 		select {
 		case <-ticker.C:
 			w.lastHeartbeat = time.Now()
-			w.writeJSON(heartbeatOp{1, w.seq})
+			w.sendHeartbeat()
 		case <-w.listening:
 			return
 		}
 	}
 }
 
-func (w *Websocket) readMessage() ([]byte, error) {
-	frame, err := ws.ReadFrame(w.conn)
-	if err != nil {
-		return nil, err
+func (w *Websocket) sendHeartbeat() {
+	w.writeJSON(heartbeatOp{1, w.seq})
+}
+
+func (w *Websocket) readMessage() (ws.Frame, error) {
+	var err error
+	var frame ws.Frame
+	frame, err = ws.ReadFrame(w.conn)
+	for err == io.EOF {
+		// fmt.Println(err)
+		frame, err = ws.ReadFrame(w.conn)
 	}
-	fmt.Println(frame.Header.OpCode)
-	// if _, err := io.Copy(&buf, w.conn); err != nil {
-	// 	return nil, err
-	// }
-	return frame.Payload, nil
+	if frame.Header.OpCode == ws.OpClose || frame.Header.Fin {
+		w.listening <- nil
+	}
+	fmt.Println(string(frame.Payload))
+	return frame, err
 }
 
 func (w *Websocket) events() {
 	for {
 		m, err := w.readMessage()
 		if err != nil {
+			if err == io.EOF {
+				continue
+			}
+			fmt.Println(err)
 			return
 		}
 		select {

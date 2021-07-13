@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"time"
+
+	"github.com/gobwas/ws"
 )
 
 type Event struct {
@@ -27,11 +29,11 @@ type heartbeatOp struct {
 }
 
 // TODO: add hello event checking
-func (w *Websocket) handleEvent(data []byte) error {
+func (w *Websocket) handleEvent(frame ws.Frame) error {
 
 	// Define as io.Reader for zlib
 	var reader io.Reader
-	reader = bytes.NewBuffer(data)
+	reader = bytes.NewBuffer(frame.Payload)
 
 	// if mType == websocket.MessageBinary {
 	// 	zl, err := zlib.NewReader(reader)
@@ -78,7 +80,7 @@ func (w *Websocket) handleEvent(data []byte) error {
 
 	switch ev.Type {
 	case EVENTS.MESSAGE_CREATE:
-		ctx.Message = &(*newMessage(w.client, ev.Data))
+		ctx.Message = newMessage(w.client, ev.Data)
 	/* this should be temporary lol , have this switch every event */
 	case EVENTS.CHANNEL_CREATE, EVENTS.CHANNEL_DELETE, EVENTS.CHANNEL_UPDATE:
 		var channel Channel
