@@ -59,8 +59,7 @@ func (c *Client) Connect() error {
 
 // Closes the current websocket connection with Discord.
 func (c *Client) Close() {
-	c.ws.conn.Close()
-	c.ws.listening <- nil
+	c.ws.Close()
 }
 
 // Creates an event listener to listen for the specified event.

@@ -20,7 +20,7 @@ type ChannelCache struct {
 	cache Cache
 }
 
-func (c *ChannelCache) Get(snowflake string) Channel {
+func (c *ChannelCache) Get(snowflake Snowflake) Channel {
 	return c.cache.get(snowflake).(Channel)
 }
 
@@ -45,7 +45,7 @@ func (c *Client) getChannel(id string) *Channel {
 func (c *Channel) SendMessage(message string) error {
 	/* need something better then c.Client */
 	_, err := c.client.sendRequest(
-		fmt.Sprintf("/channels/%s/messages", c.ID),
+		fmt.Sprintf("/channels/%s/messages", *c.ID),
 		"POST",
 		fmt.Sprintf(`{"content": "%s"}`, message),
 	)
@@ -59,7 +59,7 @@ func (c *Channel) SendEmbed(embed Embed) error {
 		return err
 	}
 	_, err = c.client.sendRequest(
-		fmt.Sprintf("/channels/%s/messages", c.ID),
+		fmt.Sprintf("/channels/%s/messages", *c.ID),
 		"POST",
 		fmt.Sprintf(`{"embed": %s}`, body),
 	)

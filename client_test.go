@@ -17,9 +17,10 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(client.Options.Token)
 	client.On("ready", func(ctx *Context) {
 		fmt.Println("Client ready")
 	})
-	client.Connect()
+	if err := client.Connect(); err != nil {
+		panic(err)
+	}
 }

@@ -4,12 +4,14 @@ import "errors"
 
 var ErrClientCreate = errors.New("an error occurred while instantiating the client")
 
+var ErrConnClose = errors.New("server issued connection close frame")
+
 var ErrNoGateway = errors.New("failed to get gateway uri")
 var ErrConnFailed = errors.New("failed to connect to gateway")
 var ErrCannotRead = errors.New("failed to read gateway message")
 
 var ErrDecompressEvent = errors.New("failed to decompress event message")
-var ErrEventDecode = errors.New("failed to decode even message")
+var ErrEventDecode = errors.New("failed to decode event message")
 var ErrHeartbeat = errors.New("failed to send heartbeat")
 var ErrExpectedHello = errors.New("gateway returned non-hello response")
 

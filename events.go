@@ -2,6 +2,7 @@ package gocord
 
 import (
 	"bytes"
+	"compress/zlib"
 	"encoding/json"
 	"errors"
 	"io"
@@ -35,14 +36,14 @@ func (w *Websocket) handleEvent(frame ws.Frame) error {
 	var reader io.Reader
 	reader = bytes.NewBuffer(frame.Payload)
 
-	// if mType == websocket.MessageBinary {
-	// 	zl, err := zlib.NewReader(reader)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer zl.Close()
-	// 	reader = zl
-	// }
+	if frame.Header.OpCode == ws.OpBinary {
+		zl, err := zlib.NewReader(reader)
+		if err != nil {
+			return err
+		}
+		defer zl.Close()
+		reader = zl
+	}
 
 	// Unmarshal websocket message into event
 	var ev *Event

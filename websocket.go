@@ -30,6 +30,11 @@ func newWebsocket(c *Client) *Websocket {
 	return &ws
 }
 
+func (w *Websocket) Close() {
+	w.conn.Close()
+	w.listening <- nil
+}
+
 func (w *Websocket) getGateway() {
 	res, err := http.Get("https://discordapp.com/api/v9/gateway")
 	if err != nil {
@@ -81,12 +86,13 @@ func (w *Websocket) connect() error {
 	w.identify()
 
 	f, err = w.readMessage()
-	w.handleEvent(f)
 	if err != nil {
+		fmt.Println(err)
 		return ErrCannotRead
 	}
+	w.handleEvent(f)
 
-	// Initaliase Cache
+	// Initaliase Caches
 	{
 		w.client.Guilds = &GuildCache{}
 		w.client.Guilds.cache.Init()
@@ -123,15 +129,16 @@ func (w *Websocket) writeJSON(data interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ws.WriteFrame(w.conn, ws.NewTextFrame(bytes))
+	fmt.Printf("Writing: %s\n", string(bytes))
+	frame := ws.NewTextFrame(bytes)
+	fmt.Println(frame.Header.Length)
+	return ws.WriteFrame(w.conn, frame)
 }
 
 func (w *Websocket) mustWriteJSON(data interface{}) {
-	bytes, err := json.Marshal(&data)
-	if err != nil {
+	if err := w.writeJSON(data); err != nil {
 		panic(err)
 	}
-	ws.MustWriteFrame(w.conn, ws.NewTextFrame(bytes))
 }
 
 func (w *Websocket) identify() {
@@ -167,15 +174,17 @@ func (w *Websocket) sendHeartbeat() {
 }
 
 func (w *Websocket) readMessage() (ws.Frame, error) {
-	var err error
-	var frame ws.Frame
-	frame, err = ws.ReadFrame(w.conn)
-	for err == io.EOF {
-		// fmt.Println(err)
-		frame, err = ws.ReadFrame(w.conn)
-	}
-	if frame.Header.OpCode == ws.OpClose || frame.Header.Fin {
-		w.listening <- nil
+	// var err error
+	// var frame ws.Frame
+	frame, err := ws.ReadFrame(w.conn)
+	// for err == io.EOF {
+	// 	// fmt.Println(err)
+	// 	frame, err = ws.ReadFrame(w.conn)
+	// }
+	if frame.Header.OpCode == ws.OpClose {
+		fmt.Println("closing...")
+		w.Close()
+		return frame, ErrConnClose
 	}
 	fmt.Println(string(frame.Payload))
 	return frame, err

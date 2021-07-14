@@ -5,12 +5,10 @@ import (
 	"time"
 )
 
-type Snowflake struct {
-	string
-}
+type Snowflake string
 
 func (s *Snowflake) ReadTimestamp() (time.Time, error) {
-	n, err := strconv.ParseInt(s.string, 10, 64)
+	n, err := strconv.ParseInt(string(*s), 10, 64)
 	if err != nil {
 		return time.Time{}, err
 	}
